@@ -1,8 +1,10 @@
-const tf =require("@tensorflow/tfjs-node");
+const tf = require("@tensorflow/tfjs-node");
 const { func } = require("@tensorflow/tfjs-data");
-const tfjsvis = require("@tensorflow/tfjs-vis")
 const fs = require("fs").promises;
 const fetch = require("node-fetch");
+
+const trainner = require("./trainning");
+const modeliser = require("./model")
 
 async function getData() {
 
@@ -14,21 +16,25 @@ async function getData() {
         horsepower: car.Horsepower,
     })).filter(car => (car.mpg != null && car.horsepower != null));
 
-    console.log(cleaned);
-
     return (cleaned);
 }
 
 async function run() {
 
     const data = await getData();
+    const tensorData = trainner.convertToTensor(data);
+    const {inputs, labels} = tensorData;
+    const model = modeliser.createModel();
+
     const values = data.map(d => ({
 
         x: d.horsepower,
         y: d.mpg,
     }));
 
-    console.log(values);
+    //console.log(values);
+    await trainner.trainModel(model, inputs, labels);
+    console.log('Done Training 🏋🏾‍♂️💪🏾');
 }
 
 run();
